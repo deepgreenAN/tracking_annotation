@@ -1,0 +1,56 @@
+.container {
+    width: 1500px;
+    display: -webkit-flex;
+    display: flex;
+  }
+.flex-main {
+    width: 600px;
+    margin-right: 20px;
+    background-color: green;
+  }
+.flex-side {
+    background-color: skyblue;
+    width: 350px;
+    height: 600px;
+  }
+
+.center_wrapper{
+  text-align:center;
+}
+
+#scroll-object-wrapper{
+  width: 350px;
+  height: 500px;
+  overflow-y: scroll;
+}
+
+#scroll-object-1{
+  background-color: pink;
+}
+
+
+#shown-canvas-wrapper{
+    width: 600px;
+    position: relative;
+}
+
+#shown-img {
+    width: 600px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#shown-canvas {
+    width: 600px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+#coordinate {
+    width: 600px;
+    z-index: 3;
+}

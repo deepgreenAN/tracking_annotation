@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style_for_flask.css') }}"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Annotation program</title>
+  </head>
+  <body>
+    <div id="container">
+      <div id="flex-main">
+        <div id="child-container">
+          <div id="input-text">
+            入力動画/入力json
+          </div>
+          <div id="input-movie-path-text-box">
+            <input type="text" id="input-movie-path-text">
+            <input type="button" id="input-movie-path-input" value="入力" >
+          </div>
+          <div id="input-json-path-text-box">
+            <input type="text" id="input-json-path-text">
+            <input type="button" id="input-json-path-input" value="入力" >
+          </div>
+          <div id="output-text">
+            出力画像/出力json
+          </div>
+          <div id="output-images-path-text-box">
+            <input type="text" id="output-images-path-text">
+            <input type="button" id="output-images-path-input" value="入力" >
+          </div>
+          <div id="output-json-path-text-box">
+            <input type="text" id="output-json-path-text">
+            <input type="button" id="output-json-path-input" value="入力" >
+          </div>
+          <input type="button" id="path-submit" value="読み込み" >
+        </div>
+
+        <div id="coordinate">
+          X座標：<input type="text" id="txtX" />
+          Y座標：<input type="text" id="txtY" />
+        </div>
+
+        <div id="shown-canvas-wrapper">
+          <img src="static/読み込み中.png" id="shown-img">
+          <canvas id="shown-canvas"></canvas>
+        </div>
+      </div>
+    
+      <div id="flex-side" id="flex-side1">
+        <div class="center_wrapper">
+          <button id="save-button" type="button">保存</button>
+          <button id="remove-cash-button" type="button">キャッシュを削除</button>
+        </div>   
+        <div class="center_wrapper">
+          <button id="createbutton" type="button">あたらしいオブジェクト</button>
+        </div>
+        <div id="scroll-object-wrapper"></div>
+      </div>
+
+    <!-- <script type=text/javascript src="script.js"></script> -->
+    <script type=text/javascript src="{{ url_for('static', filename='script.js')}}"></script>
+  </body>
+</html>

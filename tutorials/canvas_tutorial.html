@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>canvas tutorial</title>
+    <style>
+      #canvas {
+        background: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <script>
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d")
+      var upper_left_pos = {"x":0, "y":0};
+      var lowwer_right_pos = {"x":0, "y":0};
+      var is_search_upper_left = true;
+      // var is_search_upper_right_pos = false;  // 今はいらない
+
+      function onClick(e){
+        var offsetX = e.offsetX; // =>要素左上からのx座標
+        var offsetY = e.offsetY; // =>要素左上からのy座標
+
+        if (is_search_upper_left) {
+          upper_left_pos["x"] = offsetX;
+          upper_left_pos["y"] = offsetY;
+          is_search_upper_left = false;
+        } else {
+          lowwer_right_pos["x"] = offsetX;
+          lowwer_right_pos["y"] = offsetY;
+          is_search_upper_left = true;
+        }
+      }
+
+      function draw_box(offset_x, offset_y){
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        if (is_search_upper_left) {
+          ctx.beginPath();
+          ctx.strokeStyle = "blue";
+          ctx.strokeRect(
+            upper_left_pos["x"],
+            upper_left_pos["y"],
+            lowwer_right_pos["x"]-upper_left_pos["x"],
+            lowwer_right_pos["y"]-upper_left_pos["y"]
+          );
+          ctx.closePath();
+        } else {
+          ctx.beginPath();
+          ctx.strokeStyle = "blue";
+          ctx.strokeRect(
+            upper_left_pos["x"],
+            upper_left_pos["y"],
+            offset_x-upper_left_pos["x"],
+            offset_y-upper_left_pos["y"]
+          );
+          ctx.closePath();       
+        }
+      }
+
+      function onMove(e) {
+        var offsetX = e.offsetX; // =>要素左上からのx座標
+        var offsetY = e.offsetY; // =>要素左上からのy座標
+
+        draw_box(offsetX, offsetY);
+      }
+
+      canvas.addEventListener("click", onClick)
+      canvas.addEventListener("mousemove", onMove)
+
+    </script>
+  </body>
+</html>

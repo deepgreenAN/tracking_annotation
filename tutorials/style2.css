@@ -1,0 +1,97 @@
+#container {
+    display: flex;
+    height: 700px;
+    width: 1000px;
+  }
+#flex-main {
+    width: 650px;
+    background-color: green;
+  }
+#child-container {
+  display: grid;
+  grid-template-rows: 30px 30px;
+  grid-template-columns: 150px 200px 200px 100px;
+  grid-template-areas: 
+    "areaA areaB areaC areaG"
+    "areaD areaE areaF areaG";
+}
+#input-text {
+  grid-area: areaA;
+}
+#input-file-type {
+  grid-area: areaB;
+}
+#input-text-box {
+  grid-area: areaC;
+}
+#output-text {
+  grid-area: areaD;
+}
+#output-images-path-text-box {
+  grid-area: areaE;
+}
+#output-dill-path-text-box {
+  grid-area: areaF;
+}
+#path-submit {
+  grid-area: areaG;
+}
+#input-path-text {
+  width:130px;
+}
+#output-images-path-text {
+  width: 130px;
+}
+#output-dill-path-text {
+  width: 130px;
+}
+#flex-side {
+    background-color: skyblue;
+    height: 100%;
+    width: 350px;
+  }
+.center_wrapper{
+  text-align:center;
+}
+#createbutton {
+  margin-top: 90px;
+}
+
+#scroll-object-wrapper{
+  width: 100%;
+  height:600px;
+  overflow-y: scroll;
+  margin-left: 30px;
+}
+
+#scroll-object-1{
+  background-color: pink;
+}
+
+
+#shown-canvas-wrapper{
+    width: 100%;
+    position: relative;
+}
+
+#shown-img {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#shown-canvas {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+#coordinate {
+    width: 100%;
+    z-index: 3;
+    text-align:center;
+}
