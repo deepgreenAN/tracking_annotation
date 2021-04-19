@@ -2,6 +2,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import shutil
+from PIL import Image
 
 import h5py
 
@@ -86,9 +87,6 @@ class MovieImageArray:
             if self.hdf5_path.exists():
                 self.hdf5_path.unlink()
                     
-    def __del__(self):
-        self.close()
-            
     def __len__(self):
         return self.dataset.attrs["length"]
     
@@ -193,17 +191,16 @@ class MovieImageArrayFile:
         if self.is_temp:
             if self.dir_path.exists():
                 shutil.rmtree(self.dir_path)
-                    
-    def __del__(self):
-        self.close()
-            
+                           
     def __len__(self):
         return len(self.image_paths)
     
     def __getitem__(self, i):
         image_path = self.image_paths[i]
-        image = cv2.imread(str(image_path))
-        return image
+        #image = cv2.imread(str(image_path))  # メモリリークの疑いあり
+        img = Image.open(image_path)
+        image_array = np.array(img)[:,:,::-1]
+        return image_array
         
     def __iter__(self):
         def inner_gen():
@@ -253,10 +250,7 @@ class MovieImageArrayRaw:
     
     def close(self):
         pass
-    
-    def __del__(self):
-        self.close()
-            
+      
     def __len__(self):
         return len(self.images)
     

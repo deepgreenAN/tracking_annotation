@@ -10,8 +10,13 @@ var is_search_upper_left = true;
 var roi_object_id = 0;
 var roi_object_id_index_counter = 0;
 var is_wait_action = false;
-var is_wait_image_chenge = true;
+var is_wait_image_change = true;
 var is_continue = false;
+var pixel_ratio_display_over_true_x = 1;
+var pixel_ratio_display_over_true_y = 1;
+var true_width = null;
+var true_height = null;
+var is_auto_mode = false;
 
 var pic_source_list = []
 
@@ -75,6 +80,7 @@ function postPaths(){
   console.log("output_images_path_text:", output_images_path_text.value)
   console.log("output_json_path_text:", output_json_path_text.value)
   if (input_movie_path_text.value != "" && output_images_path_text.value != "" && output_json_path_text.value != "") {
+    is_wait_image_change = true;  // 画面の遷移を待ってもらう
     $.ajax({
       url: "pathsubmit",
       type: "POST",
@@ -89,16 +95,19 @@ function postPaths(){
     })
     .done(function(response) {
       pic_source_list = response["image_path_list"]
-      frame_index = 0
-      shown_img.src = pic_source_list[frame_index]
       if (!response["is_success"]) {
         alert("入力されたパスが間違っています．入力し直してください")
       } else {
         alert("パスを読み込みました，")
-        is_wait_image_chenge = false;
+        frame_index = 0
+        shown_img.src = pic_source_list[frame_index]
+        is_wait_image_change = false;
+        true_width = response["image_w"]
+        true_height = response["image_h"]
       }
       setSizeCanvasWrapper();
       setSizeCanvas();
+      setSizeRatio();
     })
     console.log("posted all path")
   } else {
@@ -122,16 +131,16 @@ function picOnClick(e) {
 
   if (! is_wait_action) {  // 待ち時間でない場合
     if (is_search_upper_left) {
-      upper_left_pos["x"] = offsetX;
-      upper_left_pos["y"] = offsetY;
+      upper_left_pos["x"] = Math.round(offsetX/pixel_ratio_display_over_true_x);
+      upper_left_pos["y"] = Math.round(offsetY/pixel_ratio_display_over_true_y);
       is_search_upper_left = false;
     } else {
-      lowwer_right_pos["x"] = offsetX;
-      lowwer_right_pos["y"] = offsetY;
+      lowwer_right_pos["x"] = Math.round(offsetX/pixel_ratio_display_over_true_x);
+      lowwer_right_pos["y"] = Math.round(offsetY/pixel_ratio_display_over_true_y);
       is_search_upper_left = true;
     }
-    picOnMove(e);
   }
+  picOnMove(e);
 }
 
 // 現在roiの描画
@@ -140,7 +149,7 @@ function setSizeCanvasWrapper(){
   var shown_img = document.getElementById("shown-img")
   shown_canvas_wrapper.width = shown_img.width  // canvas-wrapperのサイズを画像に合わせる
   shown_canvas_wrapper.height = shown_img.height  // canvas-wrapperのサイズを画像に合わせる
-  console.log("shown-canvas-wrapper setted: width:",shown_canvas_wrapper.width, shown_canvas_wrapper.height)
+  console.log("shown-canvas-wrapper setted: width, height:",shown_canvas_wrapper.width, shown_canvas_wrapper.height)
 }
 setSizeCanvasWrapper(); // 通常は読み込んだ後に一度呼ばれる
 
@@ -149,9 +158,19 @@ function setSizeCanvas(){
   var shown_img = document.getElementById("shown-img")
   shown_canvas.width = shown_img.width  // canvasのサイズを画像に合わせる
   shown_canvas.height = shown_img.height  // canvasのサイズを画像に合わせる
-  console.log("shown-canvas setted: width:",shown_canvas.width, shown_canvas.height)
+  console.log("shown-canvas setted: width, height:",shown_canvas.width, shown_canvas.height)
 }
 setSizeCanvas(); // 通常は読み込んだ後に一度呼ばれる
+
+function setSizeRatio(){
+  var shown_img = document.getElementById("shown-img")
+  if (true_width!=null && true_height!=null) {
+    pixel_ratio_display_over_true_x = shown_img.width / true_width
+    pixel_ratio_display_over_true_y = shown_img.height / true_height
+  }
+  console.log("pixel ratio setted: width, height:",pixel_ratio_display_over_true_x, pixel_ratio_display_over_true_y)
+}
+setSizeRatio();
 
 let ctx = shown_canvas.getContext("2d")
 
@@ -162,17 +181,17 @@ function drawRoiBox(offsetX, offsetY){
       ctx.beginPath();
       ctx.strokeStyle = "orange";
       ctx.strokeRect(
-        upper_left_pos["x"],
-        upper_left_pos["y"],
-        lowwer_right_pos["x"]-upper_left_pos["x"],
-        lowwer_right_pos["y"]-upper_left_pos["y"]
+        Math.round(pixel_ratio_display_over_true_x*upper_left_pos["x"]),
+        Math.round(pixel_ratio_display_over_true_y*upper_left_pos["y"]),
+        Math.round(pixel_ratio_display_over_true_x*(lowwer_right_pos["x"]-upper_left_pos["x"])),
+        Math.round(pixel_ratio_display_over_true_y*(lowwer_right_pos["y"]-upper_left_pos["y"]))
       );
       ctx.font = "30px monospace";
       ctx.fillStyle = "orange";
       ctx.fillText(
         String(roi_object_id),
-        upper_left_pos["x"],
-        upper_left_pos["y"]
+        Math.round(pixel_ratio_display_over_true_x*upper_left_pos["x"]),
+        Math.round(pixel_ratio_display_over_true_y*upper_left_pos["y"])
         );
       ctx.closePath();
     }
@@ -181,17 +200,17 @@ function drawRoiBox(offsetX, offsetY){
       ctx.beginPath();
       ctx.strokeStyle = "blue";
       ctx.strokeRect(
-        upper_left_pos["x"],
-        upper_left_pos["y"],
-        offsetX-upper_left_pos["x"],
-        offsetY-upper_left_pos["y"]
+        Math.round(pixel_ratio_display_over_true_x*upper_left_pos["x"]),
+        Math.round(pixel_ratio_display_over_true_y*upper_left_pos["y"]),
+        Math.round(offsetX-pixel_ratio_display_over_true_x*upper_left_pos["x"]),
+        Math.round(offsetY-pixel_ratio_display_over_true_y*upper_left_pos["y"])
       );
       ctx.font = "30px monospace";
       ctx.fillStyle = "blue";
       ctx.fillText(
         String(roi_object_id),
-        upper_left_pos["x"],
-        upper_left_pos["y"]
+        Math.round(pixel_ratio_display_over_true_x*upper_left_pos["x"]),
+        Math.round(pixel_ratio_display_over_true_y*upper_left_pos["y"])
         );
       ctx.closePath(); 
     }      
@@ -287,11 +306,11 @@ class ScrollObjectItem extends HTMLElement{
     let cUWfunc = (event) => this.convertUnWritable();  // thisの固定
 
     let updateLabel = (event) => {
-      console.log("label chenged")
+      console.log("label changed")
       this.label = this.textbox_1.value;
     };  // thisの固定
     let updateState = (event) => {
-      console.log("label chenged")
+      console.log("label changed")
       this.state = this.textbox_2.value;
     };  // thisの固定
 
@@ -406,7 +425,7 @@ appendScrollObjectItem();
 
 // 画面遷移で行うこと
 function incSrcpic() { // shown_imgを一つ進める
-  if (!is_wait_image_chenge) {
+  if (!is_wait_image_change) {
     if (frame_index+1 < pic_source_list.length) {
       frame_index ++;
     } 
@@ -415,7 +434,7 @@ function incSrcpic() { // shown_imgを一つ進める
 }
 
 function decSrcpic() {  // shown_imgを一つ減らす
-  if (!is_wait_image_chenge) {
+  if (!is_wait_image_change) {
     if (frame_index-1 >= 0) {
       frame_index --;
     }
@@ -560,6 +579,9 @@ function postRoi() {  // roiを送信する
       }) 
       .always(function(xhr,msg){
         is_wait_action = false
+        if (is_auto_mode) {
+          transition_n();  // 自身の呼び出し．再帰注意！
+        }
       })
     }
   }
@@ -602,17 +624,17 @@ function drawNotRoiBox(){
         ctx.beginPath();
         ctx.strokeStyle = "red";
         ctx.strokeRect(
-          all_data_dict[frame_key][object_key]["pos"]["x1"],
-          all_data_dict[frame_key][object_key]["pos"]["y1"],
-          all_data_dict[frame_key][object_key]["pos"]["x2"]-all_data_dict[frame_key][object_key]["pos"]["x1"],
-          all_data_dict[frame_key][object_key]["pos"]["y2"]-all_data_dict[frame_key][object_key]["pos"]["y1"]
+          Math.round(pixel_ratio_display_over_true_x*all_data_dict[frame_key][object_key]["pos"]["x1"]),
+          Math.round(pixel_ratio_display_over_true_y*all_data_dict[frame_key][object_key]["pos"]["y1"]),
+          Math.round(pixel_ratio_display_over_true_x*all_data_dict[frame_key][object_key]["pos"]["x2"]-all_data_dict[frame_key][object_key]["pos"]["x1"]),
+          Math.round(pixel_ratio_display_over_true_y*all_data_dict[frame_key][object_key]["pos"]["y2"]-all_data_dict[frame_key][object_key]["pos"]["y1"])
         );
         ctx.font = "30px monospace";
         ctx.fillStyle = "red";
         ctx.fillText(
           String(all_data_dict[frame_key][object_key]["object_id"]),
-          all_data_dict[frame_key][object_key]["pos"]["x1"],
-          all_data_dict[frame_key][object_key]["pos"]["y1"]
+          Math.round(all_data_dict[frame_key][object_key]["pos"]["x1"]),
+          Math.round(all_data_dict[frame_key][object_key]["pos"]["y1"])
           );
         ctx.closePath();
       }
@@ -627,9 +649,15 @@ function drawRoiPolygon(){
     for (var index in roi_polygon_list) {
       point_dict = roi_polygon_list[index]
       if (counter==0){
-        ctx.moveTo(point_dict["x"],point_dict["y"]);
+        ctx.moveTo(
+          Math.round(pixel_ratio_display_over_true_x*point_dict["x"]),
+          Math.round(pixel_ratio_display_over_true_y*point_dict["y"])
+        );
       } else {
-        ctx.lineTo(point_dict["x"],point_dict["y"]);
+        ctx.lineTo(
+          Math.round(pixel_ratio_display_over_true_x*point_dict["x"]),
+          Math.round(pixel_ratio_display_over_true_y*point_dict["y"])
+        );
       }
       counter ++;
     }
@@ -644,7 +672,7 @@ function initializePolygon(){
   roi_polygon_list = null
 }
 
-function chengeRoiNext(){
+function changeRoiNext(){
   var object_dict = scrollobject.getObjectDict()
   var object_id_list = []
   for (var object_key in object_dict) {
@@ -655,7 +683,7 @@ function chengeRoiNext(){
   roi_object_id = object_id_list[roi_object_id_index]
 };
 
-function addObjectAndChengeRoi(){
+function addObjectAndChangeRoi(){
   appendScrollObjectItem();
   var object_dict = scrollobject.getObjectDict()
   var object_id_list = []
@@ -667,45 +695,77 @@ function addObjectAndChengeRoi(){
   roi_object_id = object_id_list[roi_object_id_index]
 }
 
+// windowにたいするイベント
+function transition_n() {
+  postRoi();
+  updateRoi();
+  updateObjectDict();
+  canvasCrear();
+  incSrcpic();
+  drawRoiBox(null,null);
+  drawNotRoiBox();
+  drawRoiPolygon();
+}
+
+function transition_p() {
+  canvasCrear();
+  decSrcpic();
+  readRoi();
+  initializePolygon();
+  drawRoiBox(null,null);
+  drawNotRoiBox();
+}
+
+function transition_t() {
+  canvasCrear();
+  incSrcpic();
+  readRoi();
+  initializePolygon();
+  drawRoiBox(null,null);
+  drawNotRoiBox();
+}
+
+function change_state_c() {
+  changeRoiNext();
+  readRoi();
+  drawRoiBox(null,null);
+  drawNotRoiBox();
+}
+
+function change_state_a() {
+  addObjectAndChangeRoi();
+  initializeRoi();
+  drawNotRoiBox();
+}
+
 function documentKeyDown(e){  // keydownのイベントハンドラ
-  if (! is_wait_action && ! is_wait_image_chenge) {  // 待ち時間でない場合
+  if (! is_wait_action && ! is_wait_image_change) {  // 待ち時間でない場合
     if (e.key=="n") {
-      postRoi();
-      updateRoi();
-      updateObjectDict();
-      canvasCrear();
-      incSrcpic();
-      drawRoiBox(null,null);
-      drawNotRoiBox();
-      drawRoiPolygon();
+      transition_n();
     } else if (e.key=="p") {
-      canvasCrear();
-      decSrcpic();
-      readRoi();
-      initializePolygon();
-      drawRoiBox(null,null);
-      drawNotRoiBox();
+      transition_p();
     } else if (e.key=="c") {
-      chengeRoiNext();
-      readRoi();
-      drawRoiBox(null,null);
-      drawNotRoiBox();
+      change_state_c();
     } else if (e.key=="a") {
-      addObjectAndChengeRoi();
-      initializeRoi();
-      drawNotRoiBox();
+      change_state_a();
     } else if (e.key=="t") {
-      canvasCrear();
-      incSrcpic();
-      readRoi();
-      initializePolygon();
-      drawRoiBox(null,null);
-      drawNotRoiBox();
+      transition_t();
     }
   }
 }
 
+function documentResize(e) {  // windowのresizeのイベント
+  setSizeCanvasWrapper();
+  setSizeCanvas();
+  setSizeRatio();
+  drawRoiBox(null, null);
+  drawNotRoiBox();
+  drawRoiBox();
+}
+
+
 document.addEventListener("keydown", documentKeyDown)
+document.addEventListener("click", documentResize)
 
 // 保存ボタン
 var save_button = document.getElementById("save-button")
@@ -716,8 +776,9 @@ save_button.addEventListener(
     shown_img.src = "static/書き出し中.png"; // 書き出しの値
     setSizeCanvas();
     setSizeCanvasWrapper();
+    setSizeRatio();
     canvasCrear();
-    is_wait_image_chenge = true;
+    is_wait_image_change = true;
     $.ajax({
       url: "/savealldata",
       type: "POST",
@@ -726,7 +787,7 @@ save_button.addEventListener(
       contentType: 'application/json'
     })
     .done(function(response) {
-      is_wait_image_chenge = false;
+      is_wait_image_change = false;
       shown_img.src = pic_source_list[frame_index]
       if (response["is_success"]) {
         alert("保存に成功しました")
@@ -745,6 +806,7 @@ remove_cash_button.addEventListener(
     shown_img.src = "static/読み込み中.png";
     setSizeCanvas();
     setSizeCanvasWrapper();
+    setSizeRatio();
     canvasCrear();
     frame_index = 0;
     all_data_dict = {};
@@ -759,3 +821,25 @@ remove_cash_button.addEventListener(
     })
   }
 )
+
+var auto_mode_on_radio = document.getElementById("auto-mode-on-radio")
+
+auto_mode_on_radio.addEventListener(
+  "change",
+  (e) => {
+    if (auto_mode_on_radio.checked) {
+      is_auto_mode = true;
+    }}
+)
+
+var auto_mode_off_radio = document.getElementById("auto-mode-off-radio")
+
+auto_mode_off_radio.addEventListener(
+  "change",
+  (e) => {
+    if (auto_mode_off_radio.checked) {
+      is_auto_mode = false;
+    }}
+)
+
+
