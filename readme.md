@@ -6,4 +6,4 @@
 ## 使い方
 <img src="https://dl.dropboxusercontent.com/s/kpzubae18doglle/simple_use.gif">
 
-- hでヘルプ
+- hでヘルプ[こちら](https://github.com/deepgreenAN/tracking_annotation/wiki)と同じ
