@@ -31,6 +31,42 @@ def index():
     app.logger.debug("this is root")
     return render_template('index.html')
 
+def load_json(json_path):
+    with open(json_path, "r") as f:
+        json_dict = json.load(f)
+
+    all_data_dict = {}
+    for one_frame_dict in json_dict:
+        frame_number_str = Path(one_frame_dict["file_name"]).stem.split("_")[-1]
+        frame_key = "frame_" + frame_number_str
+        all_data_dict[frame_key] = {}
+        for one_object_dict in one_frame_dict["annotations"]:
+            object_id = one_object_dict["tracking_object_id"]
+            object_key = "object_" + str(object_id)
+            
+            all_data_dict[frame_key][object_key] = {}
+            if "bbox" in one_object_dict.keys():
+                pos_dict = {"x1":one_object_dict["bbox"][0],
+                            "y1":one_object_dict["bbox"][1],
+                            "x2":one_object_dict["bbox"][2],
+                            "y2":one_object_dict["bbox"][3]
+                        }
+            else:
+                pos_dict = None
+            if "polygon" in one_object_dict.keys():
+                polygon_list = [{"x":one_point[0], "y":one_point[1]} for one_point in one_object_dict["polygon"]]
+            else:
+                polygon_list = None
+                
+            all_data_dict[frame_key][object_key]["pos"] = pos_dict
+            all_data_dict[frame_key][object_key]["polygon"] = polygon_list
+            all_data_dict[frame_key][object_key]["state"] = one_object_dict["state_id"]
+            all_data_dict[frame_key][object_key]["label"] = one_object_dict["category_id"]
+            all_data_dict[frame_key][object_key]["object_id"] = object_id 
+    
+    return all_data_dict       
+
+
 @app.route('/pathsubmit', methods=['POST'])
 def upload_movie():
     app.logger.debug(request.json["input_movie_path"])
@@ -44,7 +80,10 @@ def upload_movie():
 
     input_movie_path = Path(request.json["input_movie_path"])
     app_global.movie_name = input_movie_path.stem
-    input_json_path = Path(request.json["input_json_path"])
+    if request.json["input_json_path"] == "":
+        input_json_path = None
+    else:
+        input_json_path = Path(request.json["input_json_path"])
     output_images_dir_parent_path = Path(request.json["output_images_path"])
     app_global.output_images_dir_path = output_images_dir_parent_path / Path("images_"+app_global.movie_name)
     app_global.output_json_path = Path(request.json["output_json_path"])
@@ -69,12 +108,25 @@ def upload_movie():
 
     out_dict["image_w"] = movie_width
     out_dict["image_h"] = movie_height
+
+
+    all_data_dict = None
+    if input_json_path is not None: 
+        if input_json_path.exists() and input_json_path.suffix==".json":
+            all_data_dict = load_json(input_json_path)
+        else:
+            app.logger.debug("6"+str(input_json_path.exists()))
+            app.logger.debug("7"+input_json_path.suffix)
+            is_success = False
+    
+    out_dict["all_data_dict"] = all_data_dict
     
     if not output_images_dir_parent_path.exists() or not app_global.output_json_path.parent.exists() or app_global.output_json_path.suffix != ".json":
         app.logger.debug("3"+str(not output_images_dir_parent_path.exists()))
         app.logger.debug("4"+str(not app_global.output_json_path.parent.exists()))
         app.logger.debug("5"+str(app_global.output_json_path.suffix != ".json"))
         is_success = False
+    
 
     image_path_list = []
     image_name_list = []
@@ -137,7 +189,7 @@ def save_all_dict():
     for frame_key in all_data_json:
         one_frame_dict = {}
         frame_number = int(frame_key.split("_")[1])
-        image_id = app_global.movie_name + str(frame_number)
+        image_id = app_global.movie_name + "_" + str(frame_number)
         image_path = app_global.output_images_dir_path / app_global.image_name_list[frame_number]
 
         one_frame_dict["file_name"] = str(image_path)
@@ -159,6 +211,7 @@ def save_all_dict():
             one_object_dict["bbox_mode"] = 0  # xyxy_abs
             one_object_dict["category_id"] = all_data_json[frame_key][object_key]["label"]
             one_object_dict["state_id"] = all_data_json[frame_key][object_key]["state"]
+            one_object_dict["tracking_object_id"] = all_data_json[frame_key][object_key]["object_id"]
             annotations_list.append(one_object_dict)
         
         one_frame_dict["annotations"] = annotations_list
@@ -217,6 +270,10 @@ def make_video_withbbox(all_data):
     
     out.release()
 
+@app.route('/help')
+def help():
+    app.logger.debug("this is help")
+    return render_template('help.html')
 
 if __name__ == '__main__':
     app.debug = True

@@ -1,5 +1,5 @@
-//let all_data_dict = {"frame_0":{"object_0":{"pos":{"x1":null,"y1":null,"x2":null, "y2":null}, "label":null, "state":null, "object_id":null}}};
-let all_data_dict = {}
+//var all_data_dict = {"frame_0":{"object_0":{"pos":{"x1":null,"y1":null,"x2":null, "y2":null}, "label":null, "state":null, "object_id":null}}};
+var all_data_dict = {}
 let pre_pos_dict = {"x1":null, "y1":null, "x2":null, "y2":null};  // roiが変更されたかどうかで使う
 let pre_polygon_pos_list = []  // roiが変更されたかどうかで使う
 
@@ -104,6 +104,10 @@ function postPaths(){
         is_wait_image_change = false;
         true_width = response["image_w"]
         true_height = response["image_h"]
+        if (response["all_data_dict"]!=null) {
+          all_data_dict = response["all_data_dict"]
+        }
+        console.log("all_data_dict:",all_data_dict)
 
         setSizeCanvasWrapper();
         setSizeCanvas();
@@ -909,11 +913,11 @@ class ScrollObjectItem extends HTMLElement{
 
     let updateLabel = (event) => {
       console.log("label changed")
-      this.label = this.textbox_1.value;
+      this.label = parseInt(this.textbox_1.value);
     };  // thisの固定
     let updateState = (event) => {
       console.log("label changed")
-      this.state = this.textbox_2.value;
+      this.state = parseInt(this.textbox_2.value);
     };  // thisの固定
 
     this.remove_button.addEventListener("click", rTfunc);
@@ -951,6 +955,13 @@ class ScrollObjectItem extends HTMLElement{
     console.log("removeThis "+String(this.id_number))
     this.scrollobject.removeOne(this.id_number)
   };
+
+  setLabel(label, state) {
+    this.textbox_1.value = label
+    this.label = label
+    this.textbox_2.value = state
+    this.state = state
+  }
 }
 
 window.customElements.define('scroll-object-item', ScrollObjectItem);  // 新規オブジェクトの登録
@@ -998,6 +1009,14 @@ class ScrollObject extends HTMLElement{
       }
     }
     return object_dict
+  }
+
+  setAllLabel(frame_dict) {
+    for (var object_key in frame_dict) {
+      var label = frame_dict[object_key]["label"];
+      var state = frame_dict[object_key]["state"];
+      this.scroll_dict[object_key].setLabel(label, state);
+    }
   }
 }
 
@@ -1215,15 +1234,27 @@ initializeRoi = (e) => {
 }
 
 readRoi = () => {
+  console.log("called readRoi")
   var frame_key = "frame_"+String(frame_index);
   var roi_object_key = "object_"+String(roi_object_id);
   if (frame_key in all_data_dict) {
     if (roi_object_key in all_data_dict[frame_key]) {
       var pos_dict = all_data_dict[frame_key][roi_object_key]["pos"];
+      console.log("pos_dict:",pos_dict)
       roi_box.setPos(pos_dict);
       var polygon_pos_list = all_data_dict[frame_key][roi_object_key]["polygon"]
+      console.log("polygon_list:",polygon_pos_list)
       roi_polygon.setPos(polygon_pos_list);
     }
+  }
+}
+
+readObjectLabel = () => {
+  console.log("called readObjectlLabel")
+  var frame_key = "frame_"+String(frame_index);
+  if (frame_key in all_data_dict) {
+    var one_frame_dict = all_data_dict[frame_key]
+    scrollobject.setAllLabel(one_frame_dict)
   }
 }
 
@@ -1321,6 +1352,7 @@ transition_n = () => {
   updateObjectDict();
   canvasCrear();
   incSrcpic();
+  readObjectLabel();
   roi_box._draw(null,null); // 選択に依存しない
   roi_polygon._drawPolygon(null,null); // 選択に依存しない
   roi_polygon._drawPoints(null,null); // 選択に依存しない
@@ -1332,6 +1364,7 @@ transition_p = () => {
   canvasCrear();
   decSrcpic();
   readRoi();
+  readObjectLabel();
   roi_box._draw(null,null); // 選択に依存しない
   roi_polygon._drawPolygon(null,null) // 選択に依存しない
   roi_polygon._drawPoints(null,null) // 選択に依存しない
@@ -1343,6 +1376,7 @@ transition_t = () => {
   canvasCrear();
   incSrcpic();
   readRoi();
+  readObjectLabel();
   roi_box._draw(null,null); // 選択に依存しない
   roi_polygon._drawPolygon(null,null) // 選択に依存しない
   roi_polygon._drawPoints(null,null) // 選択に依存しない
@@ -1370,6 +1404,11 @@ change_state_a = () => {
   drawNotRoiPolygon()
 }
 
+help_h = () => {
+  window.open("/help");
+  //window.open("templates/help.html")
+}
+
 function documentKeyDown(e){  // keydownのイベントハンドラ
   if (! is_wait_action && ! is_wait_image_change) {  // 待ち時間でない場合
     if (e.key=="n") {
@@ -1382,6 +1421,8 @@ function documentKeyDown(e){  // keydownのイベントハンドラ
       change_state_a();
     } else if (e.key=="t") {
       transition_t();
+    } else if (e.key=="h") {
+      help_h();
     }
   }
 }

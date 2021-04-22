@@ -5,3 +5,5 @@
 
 ## 使い方
 <img src="https://dl.dropboxusercontent.com/s/kpzubae18doglle/simple_use.gif">
+
+- hでヘルプ
