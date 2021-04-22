@@ -197,10 +197,10 @@ class MovieImageArrayFile:
     
     def __getitem__(self, i):
         image_path = self.image_paths[i]
-        #image = cv2.imread(str(image_path))  # メモリリークの疑いあり
-        img = Image.open(image_path)
-        image_array = np.array(img)[:,:,::-1]
-        return image_array
+        image = cv2.imread(str(image_path))  # メモリリークの疑いあり
+        #img = Image.open(image_path)
+        #image = np.array(img)[:,:,::-1]
+        return image
         
     def __iter__(self):
         def inner_gen():

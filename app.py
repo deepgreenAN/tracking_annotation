@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 import json
 import cv2
+import numpy as np
 from image_array import MovieImageArrayFile
 from trackers import SiameseMaskTracker
 
@@ -94,28 +95,31 @@ def upload_movie():
 
 @app.route("/postbbox", methods=["POST"])
 def send_bbox():
-    bbox_xyxy = request.json["bbox_xyxy"]
-    app.logger.debug("bbox_xyxy:"+str(bbox_xyxy))
+    app.logger.debug("request:"+str(request.json))
+    bbox_dict = request.json["bbox_dict"]
+    app.logger.debug("bbox_dict:"+str(bbox_dict))
     is_continue = request.json["is_continue"]
     app.logger.debug("is_continue:"+str(is_continue))
     frame_number = int(request.json["frame"])
     app.logger.debug("frame_number:"+str(frame_number))
+    polygon_pos_list = request.json["polygon_list"]
+    app.logger.debug("polygon_list:"+str(polygon_pos_list)) 
 
     if app_global.path_read_success:  # ファイルの読み込みに成功している場合
         if not is_continue:
-            app_global.tracker.set_bbox(app_global.image_array[frame_number], bbox_xyxy)
-            out_dict = app_global.tracker.get_bbox(app_global.image_array[frame_number+1], with_polygon=True)
+            app_global.tracker.set_bbox(app_global.image_array[frame_number], bbox_dict, polygon_pos_list)
+            out_dict = app_global.tracker.get_bbox(app_global.image_array[frame_number+1])
         else:
-            out_dict = app_global.tracker.get_bbox(app_global.image_array[frame_number+1], with_polygon=True)
+            out_dict = app_global.tracker.get_bbox(app_global.image_array[frame_number+1])
     else:
-        next_bbox_xyxy = [0,0,0,0]
-        next_polygon_list = [[0,0]]
+        next_bbox_dict = {"x1":0,"y1":0,"x2":0,"y2":0}
+        next_polygon_dict_list = []
+        return jsonify({"bbox_dict":next_bbox_dict, "polygon_list":next_polygon_dict_list})
 
+    next_bbox_dict = out_dict["bbox_dict"]
+    next_polygon_dict_list = out_dict["polygon"]
 
-    next_bbox_xyxy = out_dict["bbox_xyxy"]
-    next_polygon_list = out_dict["polygon"].tolist()  # ndarrayなので
-
-    next_json = jsonify({"bbox_xyxy":next_bbox_xyxy, "polygon":next_polygon_list})
+    next_json = jsonify({"bbox_dict":next_bbox_dict, "polygon_list":next_polygon_dict_list})
     return next_json
     
 
@@ -143,12 +147,15 @@ def save_all_dict():
         annotations_list = []
         for object_key in all_data_json[frame_key]:
             one_object_dict = {}
-            one_object_dict["bbox"] = [
-                all_data_json[frame_key][object_key]["pos"]["x1"],
-                all_data_json[frame_key][object_key]["pos"]["y1"],
-                all_data_json[frame_key][object_key]["pos"]["x2"],
-                all_data_json[frame_key][object_key]["pos"]["y2"],
-            ]
+            if all_data_json[frame_key][object_key]["pos"] is not None:
+                one_object_dict["bbox"] = [
+                    all_data_json[frame_key][object_key]["pos"]["x1"],
+                    all_data_json[frame_key][object_key]["pos"]["y1"],
+                    all_data_json[frame_key][object_key]["pos"]["x2"],
+                    all_data_json[frame_key][object_key]["pos"]["y2"],
+                ]
+            if all_data_json[frame_key][object_key]["polygon"] is not None:
+                one_object_dict["polygon"] = [[one_point["x"], one_point["y"]] for one_point in all_data_json[frame_key][object_key]["polygon"]]
             one_object_dict["bbox_mode"] = 0  # xyxy_abs
             one_object_dict["category_id"] = all_data_json[frame_key][object_key]["label"]
             one_object_dict["state_id"] = all_data_json[frame_key][object_key]["state"]
@@ -185,22 +192,31 @@ def make_video_withbbox(all_data):
         frame_key = "frame_" + str(i)
         if frame_key in all_data.keys():
             for object_key in all_data[frame_key]:
-                x1,y1 = all_data[frame_key][object_key]["pos"]["x1"], all_data[frame_key][object_key]["pos"]["y1"]
-                x2,y2 = all_data[frame_key][object_key]["pos"]["x2"], all_data[frame_key][object_key]["pos"]["y2"]
-                cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,0))
-                cv2.putText(
-                    image, 
-                    text=object_key,
-                    org=(x1,y1),
-                    fontFace=cv2.FONT_HERSHEY_SIMPLEX, 
-                    color=(0,0,0), 
-                    fontScale=1.0,
-                    thickness=2,
-                    lineType=cv2.LINE_4
-                    )
+                if all_data[frame_key][object_key]["pos"] is not None:
+                    x1,y1 = all_data[frame_key][object_key]["pos"]["x1"], all_data[frame_key][object_key]["pos"]["y1"]
+                    x2,y2 = all_data[frame_key][object_key]["pos"]["x2"], all_data[frame_key][object_key]["pos"]["y2"]
+                    image = cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,0))
+                    image = cv2.putText(
+                        image, 
+                        text=object_key,
+                        org=(x1,y1),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX, 
+                        color=(0,0,0), 
+                        fontScale=1.0,
+                        thickness=2,
+                        lineType=cv2.LINE_4
+                        )
+
+                if all_data[frame_key][object_key]["polygon"] is not None:
+                    #copied_image = image.copy()
+                    polygon_array = [[one_point["x"], one_point["y"]] for one_point in all_data[frame_key][object_key]["polygon"]]
+                    polygon_image = cv2.fillConvexPoly(image, points=np.array(polygon_array), color=(0,0,0))
+                    #image = (1-0.3)*image + (1-0.7)*polygon_image
+
         out.write(image)
     
     out.release()
+
 
 if __name__ == '__main__':
     app.debug = True

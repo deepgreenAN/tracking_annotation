@@ -193,11 +193,13 @@ class SiameseMaskTracker:
         self.siammask.eval().to(device)
         self.device = device
         
-    def set_bbox(self, image, xyxy):
-        x1 = xyxy[0]
-        y1 = xyxy[1]
-        x2 = xyxy[2]
-        y2 = xyxy[3]
+    def set_bbox(self, image, xyxy_dict=None, polygon_list=None):
+        if xyxy_dict is None:
+            raise Exception("SiameseMaskTracker set_bbox need xyxy_dict")
+        x1 = xyxy_dict["x1"]
+        y1 = xyxy_dict["y1"]
+        x2 = xyxy_dict["x2"]
+        y2 = xyxy_dict["y2"]
         
         w = x2 - x1
         h = y2 - y1
@@ -211,26 +213,27 @@ class SiameseMaskTracker:
                                   self.cfg['hp'],
                                   device=self.device)
         
-    def get_bbox(self, image, with_polygon=True):
+    def get_bbox(self, image):
         self.state = siamese_track_v2(self.state,
                                       image,
                                       mask_enable=True,
                                       refine_enable=True,
-                                      polygon_enable=with_polygon,
+                                      polygon_enable=True,
                                       device=self.device
                                      )
         
         out_dict = {}
         xywh = self.state["bbox"]
-        xyxy = [xywh[0], xywh[1], xywh[0]+xywh[2], xywh[1]+xywh[3]]
-        out_dict["bbox_xyxy"] = xyxy
+        xyxy_dict = {"x1":int(xywh[0]), "y1":int(xywh[1]), "x2":int(xywh[0]+xywh[2]), "y2":int(xywh[1]+xywh[3])}
+        out_dict["bbox_dict"] = xyxy_dict
         
-        if with_polygon:
-            polygon_array = self.state["polygon"].squeeze()
-            out_dict["polygon"] = polygon_array
-        else:
-            out_dict["polygon"] = None
-            
+
+        polygon_array = self.state["polygon"].squeeze()
+        polygon_list = []
+        for one_point_list in polygon_array:
+            polygon_list.append({"x":int(one_point_list[0]),"y":int(one_point_list[1])})
+        out_dict["polygon"] = polygon_list
+        
         return out_dict
 
 

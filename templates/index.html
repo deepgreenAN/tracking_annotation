@@ -58,14 +58,22 @@
             <input id="auto-mode-on-radio" type="radio" name="auto-mode">
             <input id="auto-mode-off-radio" type="radio" name="auto-mode" checked>
           </div>
-        </div>   
+          <div id="box-polygon-mode-container">
+            <div id="box-polygon-mode-text">矩形選択/ポリゴン選択</div>
+            <div id="box-polygon-mode-box-text">矩形</div>
+            <div id="box-polygon-mode-polygon-text">ポリ</div>
+            <input id="box-polygon-mode-box-radio" type="radio" name="box-polygon-mode" checked>
+            <input id="box-polygon-mode-polygon-radio" type="radio" name="box-polygon-mode">       
+          </div>
+        </div>
+         
         <div class="center_wrapper">
           <button id="createbutton" type="button">あたらしいオブジェクト</button>
         </div>
         <div id="scroll-object-wrapper"></div>
       </div>
 
-    <!-- <script type=text/javascript src="script.js"></script> -->
-    <script type=text/javascript src="{{ url_for('static', filename='script.js')}}"></script>
+    <!-- <script type="text/javascript" src="/static/script.js"></script> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='script.js')}}"></script>
   </body>
 </html>
