@@ -1,15 +1,28 @@
 # tracking-annotation
 深層学習などを用いたトラッキングによって，動画から取得できる画像へのアノテーションを補助する．
-
+GPU環境がおすすめ
 ## setup
-### SiamMaskのsetup
-- backends/に行き．[こちら](https://github.com/foolwood/SiamMask#environment-setup)に従う
 
-### tracking-annotationのsetup
+```
+pipenv install
+```
+あるいは
 ```
 pip install -r requirements.txt
 ```
-アプリケーションの起動
+
+### SiamMaskのsetup
+visualstudioが必要
+```
+cd backends/SiamMask
+cd utils/pyvotkit
+python setup.py build_ext --inplace
+cd ../../
+cd utils/pysot/utils/
+python setup.py build_ext --inplace
+```
+
+## アプリケーションの起動
 ```
 python app.py
 ```

@@ -9,6 +9,7 @@ Untitled.ipynb
 
 # その他
 .vscode/
+.venv/
 build/
 temp/
 dist/
