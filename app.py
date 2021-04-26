@@ -6,7 +6,7 @@ import json
 import cv2
 import numpy as np
 from image_array import MovieImageArrayFile
-from trackers import SiameseMaskTracker
+from app_config import config
 
 
 app = Flask(__name__)
@@ -14,7 +14,7 @@ app = Flask(__name__)
 class AppGlobal:
     def __init__(self):
         self.image_array = []
-        self.tracker = SiameseMaskTracker()
+        self.tracker = config.tracker
         self.output_images_dir_path = None
         self.output_json_path = None
         self.static_images_path = None
@@ -147,15 +147,15 @@ def upload_movie():
 
 @app.route("/postbbox", methods=["POST"])
 def send_bbox():
-    app.logger.debug("request:"+str(request.json))
+    #app.logger.debug("request:"+str(request.json))
     bbox_dict = request.json["bbox_dict"]
-    app.logger.debug("bbox_dict:"+str(bbox_dict))
+    #app.logger.debug("bbox_dict:"+str(bbox_dict))
     is_continue = request.json["is_continue"]
-    app.logger.debug("is_continue:"+str(is_continue))
+    #app.logger.debug("is_continue:"+str(is_continue))
     frame_number = int(request.json["frame"])
-    app.logger.debug("frame_number:"+str(frame_number))
+    #app.logger.debug("frame_number:"+str(frame_number))
     polygon_pos_list = request.json["polygon_list"]
-    app.logger.debug("polygon_list:"+str(polygon_pos_list)) 
+    #app.logger.debug("polygon_list:"+str(polygon_pos_list)) 
 
     if app_global.path_read_success:  # ファイルの読み込みに成功している場合
         if not is_continue:
@@ -221,7 +221,8 @@ def save_all_dict():
     with open(app_global.output_json_path, "w") as f:
         json.dump(out_json_dict, f, indent=4)
 
-    make_video_withbbox(request.json)
+    if config.make_video:
+        make_video_withbbox(request.json)
     
     return jsonify({"is_success":True})
 

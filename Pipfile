@@ -21,6 +21,8 @@ tensorboardX = "==1.6"
 torch = "*"
 torchvision = "*"
 jupyter = "*"
+pyyaml = "*"
+yacs = "*"
 
 [dev-packages]
 

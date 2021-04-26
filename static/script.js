@@ -26,6 +26,7 @@ let input_movie_path_text = document.getElementById("input-movie-path-text")
 let input_movie_path_input = document.getElementById("input-movie-path-input")
 
 input_movie_path_text.readOnly = true
+input_movie_path_text.value = "E:/annotation_app/sample_movie/sample_movie_1.mp4"
 
 input_movie_path_input.addEventListener(
   "click",
@@ -50,6 +51,7 @@ let output_images_path_text = document.getElementById("output-images-path-text")
 let output_images_path_input = document.getElementById("output-images-path-input")
 
 output_images_path_text.readOnly = true
+output_images_path_text.value = "E:/annotation_app/temp"
 
 output_images_path_input.addEventListener(
   "click",
@@ -62,6 +64,7 @@ let output_json_path_text = document.getElementById("output-json-path-text")
 let output_json_path_input = document.getElementById("output-json-path-input")
 
 output_json_path_text.readOnly = true
+output_json_path_text.value = "E:/annotation_app/temp/data.json"
 
 output_json_path_input.addEventListener(
   "click",
@@ -489,92 +492,94 @@ class CanvasPolygon{
   }
 
   _drawPolygon(offsetX, offsetY){
-    if (this.is_roi_polygon_closed) { // ポリゴンが閉じている場合
-      var counter = 0
-      this.ctx.beginPath();
-      for (let index=0; index<this.roi_polygon_pos_list.length; index++) {
-        var point_dict = this.roi_polygon_pos_list[index]
-        if (counter==0){  // 最初の点のみ
-          if (counter==this.roi_point_index && offsetX!=null && offsetY!=null) { // 選択している点だった場合
-            this.ctx.moveTo(
-              offsetX,
-              offsetY,
-            );
-          } else {
-            this.ctx.moveTo(
-              Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
-              Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"])
-            );
+    if (this.roi_polygon_pos_list!=null){ // ポリゴンがnullでない場合
+      if (this.is_roi_polygon_closed) { // ポリゴンが閉じている場合
+        var counter = 0
+        this.ctx.beginPath();
+        for (let index=0; index<this.roi_polygon_pos_list.length; index++) {
+          var point_dict = this.roi_polygon_pos_list[index]
+          if (counter==0){  // 最初の点のみ
+            if (counter==this.roi_point_index && offsetX!=null && offsetY!=null) { // 選択している点だった場合
+              this.ctx.moveTo(
+                offsetX,
+                offsetY,
+              );
+            } else {
+              this.ctx.moveTo(
+                Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
+                Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"])
+              );
+            }
+          } else if(counter!=(this.roi_polygon_pos_list.length-1)) {  // 最初の点・最後の点(最初の点と同じ)以外
+            if (counter==this.roi_point_index && offsetX!=null && offsetY!=null) { // 選択している点だった場合
+              this.ctx.lineTo(
+                offsetX,
+                offsetY,
+              );
+            } else {
+              this.ctx.lineTo(
+                Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
+                Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"])
+              );
+            }
           }
-        } else if(counter!=(this.roi_polygon_pos_list.length-1)) {  // 最初の点・最後の点(最初の点と同じ)以外
-          if (counter==this.roi_point_index && offsetX!=null && offsetY!=null) { // 選択している点だった場合
-            this.ctx.lineTo(
-              offsetX,
-              offsetY,
-            );
-          } else {
-            this.ctx.lineTo(
-              Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
-              Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"])
-            );
-          }
+          counter ++;
         }
-        counter ++;
-      }
-      this.ctx.closePath();
-      if (this.roi_point_index==null) { // ポリゴンが確定している場合のみfill描画
-        this.ctx.fillStyle = "red";
-        this.ctx.globalAlpha = 0.5;
-        this.ctx.fill();
+        this.ctx.closePath();
+        if (this.roi_point_index==null) { // ポリゴンが確定している場合のみfill描画
+          this.ctx.fillStyle = "red";
+          this.ctx.globalAlpha = 0.5;
+          this.ctx.fill();
 
-        this.ctx.fillText(
-          this.text,
-          Math.round(this.pixel_ratio_display_over_true_x*this.roi_polygon_pos_list[0]["x"]),
-          Math.round(this.pixel_ratio_display_over_true_y*this.roi_polygon_pos_list[0]["y"])
-        );
+          this.ctx.fillText(
+            this.text,
+            Math.round(this.pixel_ratio_display_over_true_x*this.roi_polygon_pos_list[0]["x"]),
+            Math.round(this.pixel_ratio_display_over_true_y*this.roi_polygon_pos_list[0]["y"])
+          );
 
-      } else {
-        this.ctx.strokeStyle = "orange";
+        } else {
+          this.ctx.strokeStyle = "orange";
+          this.ctx.stroke();
+
+          this.ctx.fillStyle = "orange";
+          this.ctx.fillText(
+            this.text,
+            Math.round(this.pixel_ratio_display_over_true_x*this.roi_polygon_pos_list[0]["x"]),
+            Math.round(this.pixel_ratio_display_over_true_y*this.roi_polygon_pos_list[0]["y"])
+          );
+        }
+      } else { // ポリゴンが閉じていない場合
+        var counter = 0
+        this.ctx.beginPath();
+        for (let index=0; index<this.roi_polygon_pos_list.length; index++) {
+          var point_dict = this.roi_polygon_pos_list[index]
+          if (counter==0) {  // 最初の点のみ
+            this.ctx.moveTo(
+              Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
+              Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"])
+            );
+          } else {  // 最初の点・最後の点以外
+            this.ctx.lineTo(
+              Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
+              Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"])
+            );
+          } 
+          counter ++;
+        }
+        this.ctx.lineTo(
+          offsetX,
+          offsetY
+          );
+        this.ctx.strokeStyle = "blue";
         this.ctx.stroke();
-
-        this.ctx.fillStyle = "orange";
-        this.ctx.fillText(
-          this.text,
-          Math.round(this.pixel_ratio_display_over_true_x*this.roi_polygon_pos_list[0]["x"]),
-          Math.round(this.pixel_ratio_display_over_true_y*this.roi_polygon_pos_list[0]["y"])
-        );
-      }
-    } else { // ポリゴンが閉じていない場合
-      var counter = 0
-      this.ctx.beginPath();
-      for (let index=0; index<this.roi_polygon_pos_list.length; index++) {
-        var point_dict = this.roi_polygon_pos_list[index]
-        if (counter==0) {  // 最初の点のみ
-          this.ctx.moveTo(
-            Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
-            Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"])
+        if (this.roi_polygon_pos_list.length > 0) {
+          this.ctx.fillStyle = "blue";
+          this.ctx.fillText(
+            this.text,
+            Math.round(this.pixel_ratio_display_over_true_x*this.roi_polygon_pos_list[0]["x"]),
+            Math.round(this.pixel_ratio_display_over_true_y*this.roi_polygon_pos_list[0]["y"])
           );
-        } else {  // 最初の点・最後の点以外
-          this.ctx.lineTo(
-            Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
-            Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"])
-          );
-        } 
-        counter ++;
-      }
-      this.ctx.lineTo(
-        offsetX,
-        offsetY
-        );
-      this.ctx.strokeStyle = "blue";
-      this.ctx.stroke();
-      if (this.roi_polygon_pos_list.length > 0) {
-        this.ctx.fillStyle = "blue";
-        this.ctx.fillText(
-          this.text,
-          Math.round(this.pixel_ratio_display_over_true_x*this.roi_polygon_pos_list[0]["x"]),
-          Math.round(this.pixel_ratio_display_over_true_y*this.roi_polygon_pos_list[0]["y"])
-        );
+        }
       }
     }
   }
@@ -586,46 +591,48 @@ class CanvasPolygon{
   }
 
   _drawPoints(offsetX, offsetY) {
-    if (this.is_roi_polygon_closed) { // ポリゴンが閉じている場合
-      for (let index=0; index<this.roi_polygon_pos_list.length; index++) {
-        var point_dict = this.roi_polygon_pos_list[index];
-        if (index==this.roi_point_index && offsetX!=null && offsetY!=null) {
-          this.ctx.beginPath();
-          this.ctx.arc(offsetX,offsetY, 2, 0, 2*Math.PI, false);
-          this.ctx.fillStyle = "red";
-          this.ctx.fill();
-        } else if (index!=(this.roi_polygon_pos_list.length-1)) {  // 最初の点・最後の点(最初の点と同じ)以外
+    if (this.roi_polygon_pos_list!=null){
+      if (this.is_roi_polygon_closed) { // ポリゴンが閉じている場合
+        for (let index=0; index<this.roi_polygon_pos_list.length; index++) {
+          var point_dict = this.roi_polygon_pos_list[index];
+          if (index==this.roi_point_index && offsetX!=null && offsetY!=null) {
+            this.ctx.beginPath();
+            this.ctx.arc(offsetX,offsetY, 2, 0, 2*Math.PI, false);
+            this.ctx.fillStyle = "red";
+            this.ctx.fill();
+          } else if (index!=(this.roi_polygon_pos_list.length-1)) {  // 最初の点・最後の点(最初の点と同じ)以外
+            this.ctx.beginPath();
+            this.ctx.arc(
+              Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]), 
+              Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"]),
+              2, 
+              0, 
+              2*Math.PI, 
+              false);
+            this.ctx.fillStyle = "red";
+            this.ctx.fill();
+          }
+        }
+      } else { // ポリゴンが閉じていない場合
+        for (let index=0; index<this.roi_polygon_pos_list.length; index++) {
+          var point_dict = this.roi_polygon_pos_list[index];
           this.ctx.beginPath();
           this.ctx.arc(
-            Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]), 
+            Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
             Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"]),
-            2, 
+            2,
             0, 
             2*Math.PI, 
             false);
-          this.ctx.fillStyle = "red";
+          this.ctx.fillStyle = "blue";
           this.ctx.fill();
         }
-      }
-    } else { // ポリゴンが閉じていない場合
-      for (let index=0; index<this.roi_polygon_pos_list.length; index++) {
-        var point_dict = this.roi_polygon_pos_list[index];
-        this.ctx.beginPath();
-        this.ctx.arc(
-          Math.round(this.pixel_ratio_display_over_true_x*point_dict["x"]),
-          Math.round(this.pixel_ratio_display_over_true_y*point_dict["y"]),
-          2,
-          0, 
-          2*Math.PI, 
-          false);
-        this.ctx.fillStyle = "blue";
-        this.ctx.fill();
-      }
-      if (offsetX!=null && offsetY!=null){
-        this.ctx.beginPath();
-        this.ctx.arc(offsetX, offsetY, 2, 0, 2*Math.PI, false);
-        this.ctx.fillStyle = "blue";
-        this.ctx.fill();    
+        if (offsetX!=null && offsetY!=null){
+          this.ctx.beginPath();
+          this.ctx.arc(offsetX, offsetY, 2, 0, 2*Math.PI, false);
+          this.ctx.fillStyle = "blue";
+          this.ctx.fill();    
+        }
       }
     }
   }
@@ -647,31 +654,35 @@ class CanvasPolygon{
   }
 
   setPos(polygon_pos_list) {
-    if (polygon_pos_list.length > 0) {
-      if (
-        polygon_pos_list[0]["x"]==polygon_pos_list[polygon_pos_list.length-1]["x"] &&
-        polygon_pos_list[0]["y"]==polygon_pos_list[polygon_pos_list.length-1]["y"]
-      ) { // 正しくポリゴンが閉じている場合
-          let is_all_same = true; // 全て同じかどうか
-          for (let index=1;index<polygon_pos_list.length-1;index++) {
-            if (
-              polygon_pos_list[index]["x"]!=polygon_pos_list[0]["x"] ||
-              polygon_pos_list[index]["y"]!=polygon_pos_list[0]["y"]
-              ) {
-                is_all_same = false;
-              }  
-          }
-          if (is_all_same) { // 全て同じ場合
-            this.roi_polygon_pos_list = null;
-          } else { // 全て同じでない場合
+    if (polygon_pos_list!=null){
+      if (polygon_pos_list.length > 0) {
+        if (
+          polygon_pos_list[0]["x"]==polygon_pos_list[polygon_pos_list.length-1]["x"] &&
+          polygon_pos_list[0]["y"]==polygon_pos_list[polygon_pos_list.length-1]["y"]
+        ) { // 正しくポリゴンが閉じている場合
+            let is_all_same = true; // 全て同じかどうか
+            for (let index=1;index<polygon_pos_list.length-1;index++) {
+              if (
+                polygon_pos_list[index]["x"]!=polygon_pos_list[0]["x"] ||
+                polygon_pos_list[index]["y"]!=polygon_pos_list[0]["y"]
+                ) {
+                  is_all_same = false;
+                }  
+            }
+            if (is_all_same) { // 全て同じ場合
+              this.roi_polygon_pos_list = null;
+            } else { // 全て同じでない場合
+              this.roi_polygon_pos_list = polygon_pos_list
+            }
+        } else { // 閉じていない場合
+            polygon_pos_list.push(polygon_pos_list[0])
             this.roi_polygon_pos_list = polygon_pos_list
-          }
-      } else { // 閉じていない場合
-          polygon_pos_list.push(polygon_pos_list[0])
-          this.roi_polygon_pos_list = polygon_pos_list
+        }
+      } else { // 長さが0の場合
+          this.roi_polygon_pos_list = null;
       }
-    } else { // 長さが0の場合
-        this.roi_polygon_pos_list = null;
+    } else {
+      this.roi_polygon_pos_list = null;
     }
     console.log("polygon setted:",this.roi_polygon_pos_list)
     this.is_roi_polygon_closed = true;  // 全てセットするため
@@ -686,6 +697,11 @@ class CanvasPolygon{
   }
 
   toList() {
+    if (this.roi_polygon_pos_list==null){ // ポリゴンがnullの場合
+      console.log("to list called: null 4")
+      return null;
+    }
+
     if (!this.is_roi_polygon_closed) { // ポリゴンが閉じていない場合 
       console.log("to list called: null 1")
       return null;
@@ -710,6 +726,11 @@ class CanvasPolygon{
     return out_list
   }
   makeBox() { // ポリゴンから矩形を作成
+    if (this.roi_polygon_pos_list==null){ // ポリゴンがnullの場合
+      console.log("to list called: null 4")
+      return null;
+    }
+  
     if (!this.is_roi_polygon_closed) { // ポリゴンが閉じていない場合 
       console.log("make box called: null 1")
       return null;

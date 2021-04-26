@@ -22,6 +22,18 @@ cd utils/pysot/utils/
 python setup.py build_ext --inplace
 ```
 
+### SiamMaskの重みファイルのダウンロード
+- `backends/SiamMask/experiments/siammask_sharp`にこの[リンク](http://www.robots.ox.ac.uk/~qwang/SiamMask_DAVIS.pth)の重みファイルをダウンロード
+### pysotのsetup
+visualstudioが必要
+```
+cd backends/pysot
+python setup.py build_ext --inplace
+```
+### pysotの重みファイルのダウンロード
+- `backends/pysot/experiments/siamrpn_alex_dwxcorr`にこの[リンク](https://drive.google.com/file/d/1e51IL1UZ-5seum2yUYpf98l2lJGUTnhs/view?usp=sharing)の重みファイルをダウンロード
+- `backends/pysot/experiments/siamrpn_mobilev2_l234_dwxcorr`にこの[リンク](https://drive.google.com/file/d/1lPiRjFvajwrhOHVuXrygAj2cRb2BFFfz/view?usp=sharing)をダウンロード
+- `backends/pysot/experiments/siammask_r50_l3`にこの[リンク](https://drive.google.com/file/d/1dQoI2o5Bzfn_IhNJNgcX4OE79BIHwr8s/view?usp=sharing)をダウンロード
 ## アプリケーションの起動
 ```
 python app.py
@@ -29,6 +41,8 @@ python app.py
 
 ## 対応しているトラッキング方法
 - [SiamMask](https://github.com/foolwood/SiamMask)
+- SiamRPN([pysot](https://github.com/STVIR/pysot))
+- SiamMask([pysot](https://github.com/STVIR/pysot))
 
 ## 使い方
 <img src="https://dl.dropboxusercontent.com/s/kpzubae18doglle/simple_use.gif">

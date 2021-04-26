@@ -18,10 +18,7 @@ from tools.test import load_config, load_pretrain, siamese_init, get_subwindow_t
 from custom import Custom
 
 
-def siamese_track_v2(state, im, mask_enable=True, refine_enable=True, polygon_enable=True, device='cpu', debug=False):
-    """
-    もとの関数を修正
-    """
+def siamese_track_v2(state, im, mask_enable=True, refine_enable=True, polygon_enable=True, device='cpu', debug=False, epsilon_ratio=0.01):
     p = state['p']
     net = state['net']
     avg_chans = state['avg_chans']
@@ -149,7 +146,7 @@ def siamese_track_v2(state, im, mask_enable=True, refine_enable=True, polygon_en
             #rbox_in_img = prbox
 
             if polygon_enable:
-                epsilon = 0.01*cv2.arcLength(polygon, True)
+                epsilon = epsilon_ratio*cv2.arcLength(polygon, True)
                 approx = cv2.approxPolyDP(polygon, epsilon, True)
             else:
                 approx = None
@@ -179,19 +176,22 @@ def siamese_track_v2(state, im, mask_enable=True, refine_enable=True, polygon_en
     return state
 
 
-class SiameseMaskTracker:
-    def __init__(self, device=torch.device("cpu")):
+class SiamMaskTracker:
+    def __init__(self, is_cpu=True, epsilon=0.01):
+        is_cpu = not torch.cuda.is_available() and is_cpu
         configarg = Namespace(resume="backends/SiamMask/experiments/siammask_sharp/SiamMask_DAVIS.pth",
                               config="backends/SiamMask/experiments/siammask_sharp/config_davis.json",
                               base_path="",
-                              cpu=True,
+                              cpu=is_cpu,
                              )
+        device = torch.device("cuda" if not is_cpu else "cpu")
         self.cfg = load_config(configarg)
         siammask = Custom(anchors=self.cfg['anchors'])
         
         self.siammask = load_pretrain(siammask, configarg.resume)
         self.siammask.eval().to(device)
         self.device = device
+        self.epsilon=epsilon
         
     def set_bbox(self, image, xyxy_dict=None, polygon_list=None):
         if xyxy_dict is None:
@@ -219,7 +219,8 @@ class SiameseMaskTracker:
                                       mask_enable=True,
                                       refine_enable=True,
                                       polygon_enable=True,
-                                      device=self.device
+                                      device=self.device,
+                                      epsilon_ratio=self.epsilon
                                      )
         
         out_dict = {}
@@ -228,11 +229,14 @@ class SiameseMaskTracker:
         out_dict["bbox_dict"] = xyxy_dict
         
 
-        polygon_array = self.state["polygon"].squeeze()
-        polygon_list = []
-        for one_point_list in polygon_array:
-            polygon_list.append({"x":int(one_point_list[0]),"y":int(one_point_list[1])})
-        out_dict["polygon"] = polygon_list
+        if "polygon" in self.state:
+            polygon_array = self.state["polygon"].squeeze()
+            polygon_list = []
+            for one_point_list in polygon_array:
+                polygon_list.append({"x":int(one_point_list[0]),"y":int(one_point_list[1])})
+            out_dict["polygon"] = polygon_list
+        else:
+            out_dict["polygon"] = None
         
         return out_dict
 
