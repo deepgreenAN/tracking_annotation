@@ -14,7 +14,9 @@ pip install -r requirements.txt
 ### SiamMaskのsetup
 visualstudioが必要
 ```
-cd backends/SiamMask
+cd backends
+git clone https://github.com/foolwood/SiamMask.git
+cd SiamMask
 cd utils/pyvotkit
 python setup.py build_ext --inplace
 cd ../../
@@ -27,13 +29,15 @@ python setup.py build_ext --inplace
 ### pysotのsetup
 visualstudioが必要
 ```
-cd backends/pysot
+cd backends
+git clone https://github.com/STVIR/pysot.git
+cd pysot
 python setup.py build_ext --inplace
 ```
 ### pysotの重みファイルのダウンロード
 - `backends/pysot/experiments/siamrpn_alex_dwxcorr`にこの[リンク](https://drive.google.com/file/d/1e51IL1UZ-5seum2yUYpf98l2lJGUTnhs/view?usp=sharing)の重みファイルをダウンロード
-- `backends/pysot/experiments/siamrpn_mobilev2_l234_dwxcorr`にこの[リンク](https://drive.google.com/file/d/1lPiRjFvajwrhOHVuXrygAj2cRb2BFFfz/view?usp=sharing)をダウンロード
-- `backends/pysot/experiments/siammask_r50_l3`にこの[リンク](https://drive.google.com/file/d/1dQoI2o5Bzfn_IhNJNgcX4OE79BIHwr8s/view?usp=sharing)をダウンロード
+- `backends/pysot/experiments/siamrpn_mobilev2_l234_dwxcorr`にこの[リンク](https://drive.google.com/file/d/1lPiRjFvajwrhOHVuXrygAj2cRb2BFFfz/view?usp=sharing)の重みファイルをダウンロード
+- `backends/pysot/experiments/siammask_r50_l3`にこの[リンク](https://drive.google.com/file/d/1dQoI2o5Bzfn_IhNJNgcX4OE79BIHwr8s/view?usp=sharing)の重みファイルをダウンロード
 ## アプリケーションの起動
 ```
 python app.py
