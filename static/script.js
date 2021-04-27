@@ -1405,6 +1405,18 @@ transition_t = () => {
   drawNotRoiPolygon()
 }
 
+transition_f = () => {
+  canvasCrear();
+  frame_index = 0;
+  readRoi();
+  readObjectLabel();
+  roi_box._draw(null,null); // 選択に依存しない
+  roi_polygon._drawPolygon(null,null) // 選択に依存しない
+  roi_polygon._drawPoints(null,null) // 選択に依存しない
+  drawNotRoiBox();
+  drawNotRoiPolygon()
+}
+
 change_state_c = () => {
   changeRoiNext();
   readRoi();
@@ -1430,6 +1442,10 @@ help_h = () => {
   //window.open("templates/help.html")
 }
 
+option_o = () => {
+  window.open("/option")
+}
+
 function documentKeyDown(e){  // keydownのイベントハンドラ
   if (! is_wait_action && ! is_wait_image_change) {  // 待ち時間でない場合
     if (e.key=="n") {
@@ -1442,8 +1458,12 @@ function documentKeyDown(e){  // keydownのイベントハンドラ
       change_state_a();
     } else if (e.key=="t") {
       transition_t();
+    } else if (e.key=="f") {
+      transition_f();
     } else if (e.key=="h") {
       help_h();
+    } else if (e.key=="o") {
+      option_o();
     }
   }
 }

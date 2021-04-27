@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='option.css') }}">
+    <title>option</title>
+  </head>
+  <body>
+    <div id="container">
+      <div id="tracker-name-text">
+        trackerの選択
+      </div>
+      <select name="tracker-name" id="tracker-name-select">
+        {% for tracker in trackers %}
+        <option value={{tracker}}>{{tracker}}</option>
+        {% endfor %}
+      </select>
+      <div id="make-video-text">
+        動画を作成する
+      </div>
+      {% if make_video %}
+      <input type="checkbox" id="make-video-checkbox" checked>
+      {% else %}
+      <input type="checkbox" id="make-video-checkbox">
+      {% endif %}
+      <input type="button" id="option-submit-button" value="適用" >
+    </div>
+    <!-- <script type="text/javascript" src="/static/script.js"></script> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='option.js')}}"></script>
+  </body>
+</html>

@@ -6,11 +6,13 @@ import torch
 from pathlib import Path
 import numpy as np
 import cv2
+import sys
 
+import pysot.models.model_builder
+import pysot.tracker.tracker_builder
 from pysot.core.config import cfg
-from pysot.models.model_builder import ModelBuilder
-from pysot.tracker.tracker_builder import build_tracker
-
+#from pysot.models.model_builder import ModelBuilder
+#from pysot.tracker.tracker_builder import build_tracker
 
 
 class SiamRPNTracker:
@@ -19,14 +21,25 @@ class SiamRPNTracker:
         cfgarg = Namespace(config="backends/pysot/experiments/siamrpn_alex_dwxcorr/config.yaml",
                            snapshot="backends/pysot/experiments/siamrpn_alex_dwxcorr/model.pth",
                           )
+        # try:  # 初期化が出来ない謎仕様のため
+        #     del sys.modules['pysot.core.config']
+        #     del sys.modules['pysot.models.model_builder']
+        #     del sys.modules['pysot.tracker.tracker_builder']
+        # except Exception as e:
+        #     print("cannot re import")
+        # from pysot.core.config import cfg
+        # import pysot.models.model_builder
+        # import pysot.tracker.tracker_builder
+
         cfg.merge_from_file(cfgarg.config)
         cfg.CUDA = not is_cpu
+        #cfg.CUDA = False
         device = torch.device("cuda" if not is_cpu else "cpu")
-        model = ModelBuilder()
+        model = pysot.models.model_builder.ModelBuilder()
         model.load_state_dict(torch.load(cfgarg.snapshot,
                               map_location=lambda storage, loc: storage.cpu()))
         model.eval().to(device)
-        self.tracker = build_tracker(model)
+        self.tracker = pysot.tracker.tracker_builder.build_tracker(model)
         
     def set_bbox(self, image, xyxy_dict=None, polygon_list=None):
         if xyxy_dict is None:
@@ -59,14 +72,26 @@ class SiamRPNTrackerV2:
         cfgarg = Namespace(config="backends/pysot/experiments/siamrpn_mobilev2_l234_dwxcorr/config.yaml",
                            snapshot="backends/pysot/experiments/siamrpn_mobilev2_l234_dwxcorr/model.pth",
                           )
-        cfg.merge_from_file(cfgarg.config)
+
+        # try:  # 初期化が出来ない謎仕様のため
+        #     del sys.modules['pysot.core.config']
+        #     del sys.modules['pysot.models.model_builder']
+        #     del sys.modules['pysot.tracker.tracker_builder']
+        # except Exception as e:
+        #     print("cannot re import")
+        # from pysot.core.config import cfg
+        # import pysot.models.model_builder
+        # import pysot.tracker.tracker_builder
+
+        # cfg.merge_from_file(cfgarg.config)
         cfg.CUDA = not is_cpu
+        #cfg.CUDA = False
         device = torch.device("cuda" if not is_cpu else "cpu")
-        model = ModelBuilder()
+        model = pysot.models.model_builder.ModelBuilder()
         model.load_state_dict(torch.load(cfgarg.snapshot,
                               map_location=lambda storage, loc: storage.cpu()))
         model.eval().to(device)
-        self.tracker = build_tracker(model)
+        self.tracker = pysot.tracker.tracker_builder.build_tracker(model)
         
     def set_bbox(self, image, xyxy_dict=None, polygon_list=None):
         if xyxy_dict is None:
@@ -99,14 +124,26 @@ class SiamMaskTrackerV2():
         cfgarg = Namespace(config="backends/pysot/experiments/siammask_r50_l3/config.yaml",
                            snapshot="backends/pysot/experiments/siammask_r50_l3/model.pth",
                           )
+
+        # try:  # 初期化が出来ない謎仕様のため
+        #     del sys.modules['pysot.core.config']
+        #     del sys.modules['pysot.models.model_builder']
+        #     del sys.modules['pysot.tracker.tracker_builder']
+        # except Exception as e:
+        #     print("cannot re import")
+        # from pysot.core.config import cfg
+        # import pysot.models.model_builder
+        # import pysot.tracker.tracker_builder
+
         cfg.merge_from_file(cfgarg.config)
         cfg.CUDA = not is_cpu
+        #cfg.CUDA = False
         device = torch.device("cuda" if not is_cpu else "cpu")
-        model = ModelBuilder()
+        model = pysot.models.model_builder.ModelBuilder()
         model.load_state_dict(torch.load(cfgarg.snapshot,
                               map_location=lambda storage, loc: storage.cpu()))
         model.eval().to(device)
-        self.tracker = build_tracker(model)
+        self.tracker = pysot.tracker.tracker_builder.build_tracker(model)
         self.epsilon = epsilon
         
     def set_bbox(self, image, xyxy_dict=None, polygon_list=None):
@@ -125,8 +162,11 @@ class SiamMaskTrackerV2():
         outputs = self.tracker.track(image)
         mask_img = (outputs["mask"]*255).astype(np.uint8)
         _, img_otsu = cv2.threshold(mask_img, 0, 255, cv2.THRESH_OTSU)
-        _, contours, _ = cv2.findContours(img_otsu, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        
+        #_, contours, _ = cv2.findContours(img_otsu, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if cv2.__version__[-5] == '4':
+            contours, _ = cv2.findContours(img_otsu, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        else:
+            _, contours, _ = cv2.findContours(img_otsu, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         out_dict = {}
         
         cnt_area = [cv2.contourArea(cnt) for cnt in contours]

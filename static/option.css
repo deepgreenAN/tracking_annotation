@@ -1,0 +1,25 @@
+#container {
+  display: grid;
+  text-align:center;
+  grid-template-rows: 30px 30px 30px;
+  grid-template-columns: 150px 150px;
+  grid-template-areas: 
+    "areaA areaB"
+    "areaC areaD"
+    "areaE areaE";
+}
+#tracker-name-text{
+  grid-area: areaA;
+}
+#tracker-name-select{
+  grid-area: areaB;
+}
+#make-video-text{
+  grid-area: areaC;
+}
+#make-video-checkbox{
+  grid-area: areaD;
+}
+#option-submit-button{
+  grid-area: areaE;
+}

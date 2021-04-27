@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from image_array import MovieImageArrayFile
 from app_config import config
+from tracker_factory import tracker_symbols, factory
 
 
 app = Flask(__name__)
@@ -275,6 +276,22 @@ def make_video_withbbox(all_data):
 def help():
     app.logger.debug("this is help")
     return render_template('help.html')
+
+
+@app.route("/option")
+def option():
+    app.logger.debug("this is option")
+    return render_template("option.html", trackers=tracker_symbols, make_video=config.make_video)
+
+
+@app.route("/optionsubmit", methods=["POST"])
+def get_option():
+    config.make_video = request.json["make_video"]
+    app.logger.debug("tracker name:"+str(request.json["tracker_name"]))
+    config.tracker = factory(str(request.json["tracker_name"]), config.is_cpu)
+    app_global.tracker = config.tracker
+    return jsonify({"is_success":True})
+    
 
 if __name__ == '__main__':
     app.debug = True
