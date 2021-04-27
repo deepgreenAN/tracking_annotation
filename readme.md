@@ -47,6 +47,8 @@ python app.py
 - [SiamMask](https://github.com/foolwood/SiamMask)
 - SiamRPN([pysot](https://github.com/STVIR/pysot))
 - SiamMask([pysot](https://github.com/STVIR/pysot))
+- KCF(opencv)
+- CSRT(opencv)
 
 ## 使い方
 <img src="https://dl.dropboxusercontent.com/s/kpzubae18doglle/simple_use.gif">
