@@ -38,6 +38,8 @@ python setup.py build_ext --inplace
 - `backends/pysot/experiments/siamrpn_alex_dwxcorr`にこの[リンク](https://drive.google.com/file/d/1e51IL1UZ-5seum2yUYpf98l2lJGUTnhs/view?usp=sharing)の重みファイルをダウンロード
 - `backends/pysot/experiments/siamrpn_mobilev2_l234_dwxcorr`にこの[リンク](https://drive.google.com/file/d/1lPiRjFvajwrhOHVuXrygAj2cRb2BFFfz/view?usp=sharing)の重みファイルをダウンロード
 - `backends/pysot/experiments/siammask_r50_l3`にこの[リンク](https://drive.google.com/file/d/1dQoI2o5Bzfn_IhNJNgcX4OE79BIHwr8s/view?usp=sharing)の重みファイルをダウンロード
+
+部分的なインストールをしたい場合は[こちら](https://github.com/deepgreenAN/tracking_annotation/wiki/custom-setup)
 ## アプリケーションの起動
 ```
 python app.py
@@ -54,4 +56,4 @@ python app.py
 <img src="https://dl.dropboxusercontent.com/s/kpzubae18doglle/simple_use.gif">
 
 - 使い方は[こちら](https://github.com/deepgreenAN/tracking_annotation/wiki)
-- カスタムトラッカーは[こちら](https://github.com/deepgreenAN/tracking_annotation/wiki/CustomTracker)
+- カスタムトラッカーを用いたい時は[こちら](https://github.com/deepgreenAN/tracking_annotation/wiki/CustomTracker)
