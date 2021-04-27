@@ -54,3 +54,4 @@ python app.py
 <img src="https://dl.dropboxusercontent.com/s/kpzubae18doglle/simple_use.gif">
 
 - 使い方は[こちら](https://github.com/deepgreenAN/tracking_annotation/wiki)
+- カスタムトラッカーは[こちら](https://github.com/deepgreenAN/tracking_annotation/wiki/CustomTracker)
